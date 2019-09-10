@@ -1,0 +1,34 @@
+import styled from "styled-components/native";
+import { lightGray } from "../../utils/colors";
+
+export const TitlePage = styled.Text`
+  text-align: center;
+  font-size: 20px;
+  color: palevioletred;
+  font-weight: bold;
+  margin-bottom: 15px;
+  margin-top: 15px;
+`;
+export const Title = styled.Text`
+  font-size: 17px;
+  font-weight: bold;
+  margin: 15px;
+`;
+
+// Create a Wrapper component that'll render a <section> tag with some styles
+export const Wrapper = styled.View`
+  padding: 10px;
+  /* background: papayawhip; */
+`;
+
+export const WrapperList = styled.View`
+  padding: 10px;
+  margin: 10px;
+  border-bottom-width: 1px;
+  border-top-width: 1px;
+  border-radius: 10px;
+  border-top-color: ${lightGray};
+  border-bottom-color: ${lightGray};
+  height: 75%;
+  /* background: papayawhip; */
+`;
