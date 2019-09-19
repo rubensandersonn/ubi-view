@@ -1,65 +1,151 @@
 import * as WebBrowser from "expo-web-browser";
 import React, { useState } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, View, KeyboardAvoidingView } from "react-native";
 
-import { Wrapper, Title, TitlePage, WrapperList } from "./styles";
+import { Wrapper, Title, TitlePage, WrapperList, AddButton } from "./styles";
 
-import Conta from "../../components/Conta";
-import { ScrollView, TouchableHighlight } from "react-native-gesture-handler";
-import { Total } from "../../components/Conta/style";
-import Style from "../../utils/Style";
-import { primaryEnd } from "../../utils/colors";
+import { TextInput } from "react-native-gesture-handler";
+import { Total } from "../../components/BillsHandler/Conta/style";
 
-export default HomeScreen = props => {
-  const bills = [
+import Icon from "../../utils/Icon";
+import BillsHandler from "../../components/BillsHandler";
+
+export default HomeScreen = () => {
+  // === STATES ===
+
+  // setting general state
+  const [state, setState] = useState({
+    showFormBill: false,
+    billHolder: {
+      key: -1,
+      name: null,
+      bill: null,
+      toSum: false
+    }
+  });
+
+  // setting bills state
+  const [bills, setBills] = useState([
     {
+      key: 0,
       name: "Passagens",
-      bill: 70
+      bill: 70,
+      toSum: true
     },
     {
+      key: 1,
       name: "Cartão Americanas",
-      bill: 25
+      bill: 25,
+      toSum: true
     }
-  ];
+  ]);
+
+  const [money, setMoney] = useState(0);
+
+  // === CALLBACKS ===
 
   /**
-   * Mapeando as contas
+   * handle text changes to the new bill
+   * @param {*} text
    */
-  const mapBills = bills.map((el, index) => {
-    return (
-      <View key={index}>
-        <Conta text={el.name} bill={el.bill} />
-      </View>
-    );
-  });
+  const handleChangeName = text => {
+    let holder = state.billHolder;
+    holder.name = text;
+    setState(state => ({ ...state, billHolder: holder }));
+  };
+
+  /**
+   * handle text changes to the new bill
+   * @param {*} text
+   */
+  const handleChangeBill = text => {
+    let holder = state.billHolder;
+    holder.bill = parseFloat(text);
+    setState(state => ({ ...state, billHolder: holder }));
+  };
+
+  /**
+   * gets the bill holded on state and put it on bill list
+   */
+  const addNewBill = () => {
+    let newBill = {
+      key: bills.length,
+      name: state.billHolder.name,
+      bill: state.billHolder.bill,
+      toSum: true
+    };
+
+    bills.push(newBill);
+  };
+
+  /**
+   * Sums all bills
+   * @param {*} bills
+   */
+  const sumAll = bills => {
+    let sum = 0;
+    bills.forEach(el => {
+      if (el.toSum) {
+        sum = sum + el.bill;
+      }
+    });
+    return sum;
+  };
+
+  const toggleShowForm = () => {
+    setState(state => ({ ...state, showFormBill: !state.showFormBill }));
+  };
 
   return (
     <Wrapper>
-      <Title>Dinheiro do Mês: 1500</Title>
-      <WrapperList>
-        <ScrollView>{mapBills}</ScrollView>
-      </WrapperList>
-      <Total>Total: R$ {sumAll(bills)}</Total>
-      <Total>Saldo: R$ {1500 - sumAll(bills)}</Total>
-      <TouchableHighlight
-        onPress={() =>
-          props.navigation.navigate("addNewBill", { onSubmit: () => {} })
-        }
-        style={[
-          Style.button.RoundButtonGreen,
-          {
-            width: 60,
-            height: 60,
-            borderRadius: 30,
-            backgroundColor: primaryEnd,
-            position: "absolute",
-            bottom: 15,
-            right: 10
-          }
-        ]}
-      >
-        <Text style={[Style.button.TextWhiteButton, { fontSize: 25 }]}>+</Text>
-      </TouchableHighlight>
+      <KeyboardAvoidingView style={styles.container} behavior="padding" enabled>
+        <Title>
+          <Icon i={"calendar-check"} /> Dinheiro do Mês: {money}
+          <EditMoneyButton>
+            <Icon i={"pencil-alt"} />
+          </EditMoneyButton>
+        </Title>
+        <WrapperList>
+          <BillsHandler
+            handleCheck={(index, isChecked) => {
+              bills[index].toSum = isChecked === true;
+            }}
+          />
+        </WrapperList>
+        <Total>
+          <Icon i={"money-check"} /> Total: R$ {sumAll(bills)}
+        </Total>
+        <Total>
+          <Icon i={"wallet"} /> Saldo: R$ {money - sumAll(bills)}
+        </Total>
+
+        {state.showFormBill ? (
+          <WrapperForm>
+            <TextInput
+              placeholder="Nome da Conta"
+              onChangeText={handleChangeName}
+            />
+            <TextInput
+              placeholder="Valor da Conta"
+              onChangeText={handleChangeBill}
+            />
+            <AddButton
+              onPress={() => {
+                addNewBill();
+                toggleShowForm();
+              }}
+            >
+              <TextAddButton>Add</TextAddButton>
+            </AddButton>
+          </WrapperForm>
+        ) : (
+          <AddButton onPress={toggleShowForm}>
+            <TextAddButton>
+              <Icon i={"plus"} />
+            </TextAddButton>
+          </AddButton>
+        )}
+      </KeyboardAvoidingView>
     </Wrapper>
   );
 };
@@ -75,15 +161,6 @@ function Titulo() {
     </View>
   );
 }
-
-const sumAll = bills => {
-  let sum = 0;
-  bills.forEach(el => {
-    sum = sum + el.bill;
-  });
-
-  return sum;
-};
 
 function handleLearnMorePress() {
   WebBrowser.openBrowserAsync(

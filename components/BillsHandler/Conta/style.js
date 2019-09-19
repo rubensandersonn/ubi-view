@@ -1,5 +1,5 @@
 import styled from "styled-components/native";
-import { darkGray } from "../../utils/colors";
+import { darkGray } from "../../../utils/colors";
 
 export const Texto = styled.Text.attrs(props => ({
   decoration: props.decoration

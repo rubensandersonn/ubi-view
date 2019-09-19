@@ -1,19 +1,22 @@
 import React, { useState } from "react";
-import { View, CheckBox, Text } from "react-native";
+import { CheckBox } from "react-native";
 import { Wrapper, Texto } from "./style";
-
-// import { Container } from './styles';
 
 export default function Conta(props) {
   const [state, setState] = useState({ checked: false });
 
-  const { text, bill } = props;
+  const { text, bill, whenChecked } = props;
 
   return (
     <Wrapper>
       <CheckBox
         value={state.checked}
-        onValueChange={() => setState({ checked: !state.checked })}
+        onValueChange={() => {
+          setState({ checked: !state.checked });
+
+          // telling main when i was checked
+          whenChecked(state.checked);
+        }}
       />
       <Texto decoration={state.checked ? "line-through" : "none"}>
         R$ {bill} -{" "}

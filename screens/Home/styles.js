@@ -1,5 +1,5 @@
 import styled from "styled-components/native";
-import { lightGray } from "../../utils/colors";
+import { lightGray, primaryEnd } from "../../utils/colors";
 
 export const TitlePage = styled.Text`
   text-align: center;
@@ -31,4 +31,39 @@ export const WrapperList = styled.View`
   border-bottom-color: ${lightGray};
   height: 75%;
   /* background: papayawhip; */
+`;
+
+export const AddButton = styled.TouchableOpacity`
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background-color: ${primaryEnd};
+  position: absolute;
+  bottom: 15;
+  right: 15;
+  margin: 10;
+  padding: 10;
+  justify-content: center;
+  align-items: center;
+`;
+
+export const EditMoneyButton = styled.TouchableOpacity`
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background-color: ${primaryEnd};
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  margin: 10px;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
+`;
+
+export const TextAddButton = styled.TouchableOpacity`
+  font-weight: bold;
+  font-size: 25;
+  text-align: center;
+  color: "#fefefe";
 `;
