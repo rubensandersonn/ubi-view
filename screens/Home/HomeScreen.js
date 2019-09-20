@@ -1,5 +1,5 @@
 import * as WebBrowser from "expo-web-browser";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Platform, StyleSheet, View, Text } from "react-native";
 
 import {
@@ -17,6 +17,10 @@ import { Total } from "../../components/BillsHandler/Conta/style";
 
 import BillsHandler from "../../components/BillsHandler";
 import AddForm from "../../components/AddForm";
+import {
+  getLocalStorageData,
+  setLocalStorageData
+} from "../../components/LocalStorage";
 
 export default HomeScreen = () => {
   // === STATES ===
@@ -87,13 +91,14 @@ export default HomeScreen = () => {
    */
   const addNewBill = () => {
     let newBill = {
-      key: bills.length,
+      key: bills ? bills.length : 0,
       name: state.billHolder.name,
       bill: state.billHolder.bill,
       toSum: true
     };
 
-    bills.push(newBill);
+    bills ? bills.push(newBill) : setBills([newBill]);
+    updateBillsOnLocalStorage();
   };
 
   /**
@@ -101,6 +106,7 @@ export default HomeScreen = () => {
    */
   const updateMoney = () => {
     setMoney(state.moneyHolder);
+    updateMoneyOnLocalStorage();
   };
 
   /**
@@ -109,11 +115,13 @@ export default HomeScreen = () => {
    */
   const sumAll = bills => {
     let sum = 0;
-    bills.forEach(el => {
-      if (el.toSum) {
-        sum = sum + el.bill;
-      }
-    });
+    if (bills) {
+      bills.forEach(el => {
+        if (el.toSum) {
+          sum = sum + el.bill;
+        }
+      });
+    }
     return sum;
   };
 
@@ -127,6 +135,50 @@ export default HomeScreen = () => {
       showFormMonthMoney: !state.showFormMonthMoney
     }));
   };
+
+  const updateMoneyOnLocalStorage = () => {
+    setLocalStorageData("@money", JSON.stringify({ money: money })).catch(err =>
+      console.log(err)
+    );
+  };
+
+  const updateBillsOnLocalStorage = () => {
+    setLocalStorageData("@bills", JSON.stringify({ bills: bills })).catch(err =>
+      console.log(err)
+    );
+  };
+
+  // === retrieving data from local storage ===
+  useEffect(() => {
+    // === getting bills ===
+    getLocalStorageData("@bills")
+      .then(Bills => {
+        if (Bills) {
+          setBills(JSON.parse(Bills).bills);
+        } else {
+          setBills(null);
+        }
+      })
+      .catch(err => {
+        console.log(err);
+        setBills(null);
+      });
+
+    // === getting money value ===
+
+    getLocalStorageData("@money")
+      .then(Money => {
+        if (Money) {
+          setMoney(JSON.parse(Money).money);
+        } else {
+          setMoney(0);
+        }
+      })
+      .catch(err => {
+        console.log(err);
+        setMoney(0);
+      });
+  }, []);
 
   return (
     <Wrapper behavior="padding">
@@ -160,10 +212,6 @@ export default HomeScreen = () => {
           bills={bills}
           handleCheck={index => {
             bills[index].toSum = !bills[index].toSum;
-            setState(state => ({
-              ...state,
-              isBillChanged: 2 % (state.isBillChanged + 1)
-            }));
           }}
         />
 
@@ -189,9 +237,9 @@ export default HomeScreen = () => {
         />
       </WrapperList>
 
-      <Total>Total: R$ {sumAll(bills)}</Total>
+      <Total>Dívida: R$ {sumAll(bills)}</Total>
 
-      <Total>Saldo: R$ {money - sumAll(bills)}</Total>
+      <Total>Restante: R$ {money - sumAll(bills)}</Total>
 
       {!state.showFormBill && (
         <AddButton onPress={toggleShowForm}>

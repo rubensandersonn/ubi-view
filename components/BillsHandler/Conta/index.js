@@ -21,9 +21,7 @@ export default function Conta(props) {
       <Texto decoration={state.checked ? "line-through" : "none"}>
         R$ {bill} -{" "}
       </Texto>
-      <Texto decoration={state.checked ? "line-through" : "none"}>
-        R$ {text}
-      </Texto>
+      <Texto decoration={state.checked ? "line-through" : "none"}>{text}</Texto>
     </Wrapper>
   );
 }
