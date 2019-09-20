@@ -15,7 +15,7 @@ export default function Conta(props) {
           setState({ checked: !state.checked });
 
           // telling main when i was checked
-          whenChecked(state.checked);
+          whenChecked();
         }}
       />
       <Texto decoration={state.checked ? "line-through" : "none"}>

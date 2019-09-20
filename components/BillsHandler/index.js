@@ -11,7 +11,7 @@ export default function BillsHandler(props) {
           text={el.name}
           bill={el.bill}
           whenChecked={() => {
-            handleCheck(index, isChecked);
+            handleCheck(index);
           }}
         />
       </View>

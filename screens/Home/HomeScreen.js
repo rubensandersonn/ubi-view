@@ -164,8 +164,8 @@ export default HomeScreen = () => {
       <WrapperList>
         <BillsHandler
           bills={bills}
-          handleCheck={(index, isChecked) => {
-            bills[index].toSum = isChecked === true;
+          handleCheck={index => {
+            bills[index].toSum = !bills[index].toSum;
           }}
         />
 
