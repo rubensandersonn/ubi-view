@@ -8,15 +8,9 @@ import {
   TitlePage,
   WrapperList,
   AddButton,
-  AddNewBillButton,
-  CancelNewBillButton,
   EditMoneyButton,
   TextAddButton,
-  TextInputName,
-  TextInputValue,
-  WrapperForm,
-  TextWhite,
-  Row
+  TextWhite
 } from "./styles";
 
 import { Total } from "../../components/BillsHandler/Conta/style";
@@ -31,13 +25,13 @@ export default HomeScreen = () => {
   const [state, setState] = useState({
     showFormBill: false,
     showFormMonthMoney: false,
+    moneyHolder: 0,
     billHolder: {
       key: -1,
       name: null,
       bill: null,
       toSum: false
-    },
-    moneyHolder: 0
+    }
   });
 
   // setting bills state
@@ -166,6 +160,10 @@ export default HomeScreen = () => {
           bills={bills}
           handleCheck={index => {
             bills[index].toSum = !bills[index].toSum;
+            setState(state => ({
+              ...state,
+              isBillChanged: 2 % (state.isBillChanged + 1)
+            }));
           }}
         />
 
