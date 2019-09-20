@@ -11,6 +11,8 @@ export const itemListText = "#555555";
 export const itemListTextStrike = "#c4c4cc";
 export const deleteIconColor = "#bc2e4c";
 
+export const danger = "#bc2e4c";
 export const lightGray = "#C8C8C8";
 export const gray = "#555555";
 export const darkGray = "#2e2e2e";
+export const green = "#33B022";

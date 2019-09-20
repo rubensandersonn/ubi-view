@@ -1,14 +1,28 @@
 import * as WebBrowser from "expo-web-browser";
 import React, { useState } from "react";
-import { Platform, StyleSheet, View, KeyboardAvoidingView } from "react-native";
+import { Platform, StyleSheet, View, Text } from "react-native";
 
-import { Wrapper, Title, TitlePage, WrapperList, AddButton } from "./styles";
+import {
+  Wrapper,
+  Title,
+  TitlePage,
+  WrapperList,
+  AddButton,
+  AddNewBillButton,
+  CancelNewBillButton,
+  EditMoneyButton,
+  TextAddButton,
+  TextInputName,
+  TextInputValue,
+  WrapperForm,
+  TextWhite,
+  Row
+} from "./styles";
 
-import { TextInput } from "react-native-gesture-handler";
 import { Total } from "../../components/BillsHandler/Conta/style";
 
-import Icon from "../../utils/Icon";
 import BillsHandler from "../../components/BillsHandler";
+import AddForm from "../../components/AddForm";
 
 export default HomeScreen = () => {
   // === STATES ===
@@ -16,12 +30,14 @@ export default HomeScreen = () => {
   // setting general state
   const [state, setState] = useState({
     showFormBill: false,
+    showFormMonthMoney: false,
     billHolder: {
       key: -1,
       name: null,
       bill: null,
       toSum: false
-    }
+    },
+    moneyHolder: 0
   });
 
   // setting bills state
@@ -43,6 +59,14 @@ export default HomeScreen = () => {
   const [money, setMoney] = useState(0);
 
   // === CALLBACKS ===
+
+  /**
+   * handle text changes to the new bill
+   * @param {*} text
+   */
+  const handleChangeMonthMoney = text => {
+    setState(state => ({ ...state, moneyHolder: text }));
+  };
 
   /**
    * handle text changes to the new bill
@@ -79,6 +103,13 @@ export default HomeScreen = () => {
   };
 
   /**
+   * gets the bill holded on state and put it on bill list
+   */
+  const updateMoney = () => {
+    setMoney(state.moneyHolder);
+  };
+
+  /**
    * Sums all bills
    * @param {*} bills
    */
@@ -96,56 +127,81 @@ export default HomeScreen = () => {
     setState(state => ({ ...state, showFormBill: !state.showFormBill }));
   };
 
-  return (
-    <Wrapper>
-      <KeyboardAvoidingView style={styles.container} behavior="padding" enabled>
-        <Title>
-          <Icon i={"calendar-check"} /> Dinheiro do Mês: {money}
-          <EditMoneyButton>
-            <Icon i={"pencil-alt"} />
-          </EditMoneyButton>
-        </Title>
-        <WrapperList>
-          <BillsHandler
-            handleCheck={(index, isChecked) => {
-              bills[index].toSum = isChecked === true;
-            }}
-          />
-        </WrapperList>
-        <Total>
-          <Icon i={"money-check"} /> Total: R$ {sumAll(bills)}
-        </Total>
-        <Total>
-          <Icon i={"wallet"} /> Saldo: R$ {money - sumAll(bills)}
-        </Total>
+  const toggleShowFormMoney = () => {
+    setState(state => ({
+      ...state,
+      showFormMonthMoney: !state.showFormMonthMoney
+    }));
+  };
 
-        {state.showFormBill ? (
-          <WrapperForm>
-            <TextInput
-              placeholder="Nome da Conta"
-              onChangeText={handleChangeName}
-            />
-            <TextInput
-              placeholder="Valor da Conta"
-              onChangeText={handleChangeBill}
-            />
-            <AddButton
-              onPress={() => {
-                addNewBill();
-                toggleShowForm();
-              }}
-            >
-              <TextAddButton>Add</TextAddButton>
-            </AddButton>
-          </WrapperForm>
-        ) : (
-          <AddButton onPress={toggleShowForm}>
-            <TextAddButton>
-              <Icon i={"plus"} />
-            </TextAddButton>
-          </AddButton>
-        )}
-      </KeyboardAvoidingView>
+  return (
+    <Wrapper behavior="padding">
+      <View>
+        <Title>Dinheiro do Mês: {money}</Title>
+        <EditMoneyButton onPress={toggleShowFormMoney}>
+          <TextWhite>Edit</TextWhite>
+        </EditMoneyButton>
+      </View>
+
+      {/* edit money */}
+      <AddForm
+        show={state.showFormMonthMoney}
+        inputList={[
+          {
+            placeholder: "Dinheiro do Mês",
+            handleChange: handleChangeMonthMoney
+          }
+        ]}
+        onCancel={() => {
+          toggleShowFormMoney();
+        }}
+        onConfirm={() => {
+          updateMoney();
+          toggleShowFormMoney();
+        }}
+      />
+
+      <WrapperList>
+        <BillsHandler
+          bills={bills}
+          handleCheck={(index, isChecked) => {
+            bills[index].toSum = isChecked === true;
+          }}
+        />
+
+        <AddForm
+          show={state.showFormBill}
+          inputList={[
+            {
+              placeholder: "Nome da Conta",
+              handleChange: handleChangeName
+            },
+            {
+              placeholder: "Valor da Conta",
+              handleChange: handleChangeBill
+            }
+          ]}
+          onCancel={() => {
+            toggleShowForm();
+          }}
+          onConfirm={() => {
+            addNewBill();
+            toggleShowForm();
+          }}
+        />
+      </WrapperList>
+
+      <Total>Total: R$ {sumAll(bills)}</Total>
+
+      <Total>Saldo: R$ {money - sumAll(bills)}</Total>
+
+      {!state.showFormBill && (
+        <AddButton onPress={toggleShowForm}>
+          <TextAddButton>
+            <Text>+</Text>
+          </TextAddButton>
+        </AddButton>
+      )}
     </Wrapper>
   );
 };
