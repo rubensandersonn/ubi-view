@@ -1,5 +1,5 @@
 import * as WebBrowser from "expo-web-browser";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Platform, StyleSheet, View, Text } from "react-native";
 
 import {
@@ -113,6 +113,15 @@ export default HomeScreen = () => {
     setState(state => ({ ...state, billHolder: holder }));
   };
 
+  const updateConta = () => {
+    let holder = bills;
+    holder[state.indexDaVez].name = state.billHolder.name;
+    holder[state.indexDaVez].bill = state.billHolder.bill;
+    setBills(holder);
+
+    updateBillsOnLocalStorage();
+  };
+
   /**
    * gets the bill holded on state and put it on bill list
    */
@@ -133,15 +142,6 @@ export default HomeScreen = () => {
    */
   const updateMoney = () => {
     setMoney(state.moneyHolder);
-    updateMoneyOnLocalStorage();
-  };
-
-  const updateConta = () => {
-    let holder = bills;
-    holder[state.indexDaVez].name = state.billHolder.name;
-    holder[state.indexDaVez].bill = state.billHolder.bill;
-    setBills(holder);
-
     updateMoneyOnLocalStorage();
   };
 
@@ -173,15 +173,19 @@ export default HomeScreen = () => {
   };
 
   const updateMoneyOnLocalStorage = () => {
-    setLocalStorageData("@money", JSON.stringify({ money: money })).catch(err =>
-      console.log(err)
-    );
+    setLocalStorageData("@money", JSON.stringify({ money: money }))
+      .then(res => {
+        console.log("salvou money?", res);
+      })
+      .catch(err => console.log(err));
   };
 
   const updateBillsOnLocalStorage = () => {
-    setLocalStorageData("@bills", JSON.stringify({ bills: bills })).catch(err =>
-      console.log(err)
-    );
+    setLocalStorageData("@bills", JSON.stringify({ bills: bills }))
+      .then(res => {
+        console.log("salvou bill?", res);
+      })
+      .catch(err => console.log(err));
   };
 
   // === retrieving data from local storage ===
@@ -307,17 +311,20 @@ export default HomeScreen = () => {
           setState(state => ({ ...state, visibleEditPopup: false }));
           updateConta();
         }}
-        Content={() => (
-          <View>
-            <TextInputName
-              onChange={handleEditName}
-              value={"" + state.billHolder.name}
-            />
-            <TextInputValue
-              onChange={handleEditBill}
-              value={"" + state.billHolder.bill}
-            />
-          </View>
+        Content={useCallback(
+          () => (
+            <View>
+              <TextInputName
+                onChangeText={handleChangeName}
+                value={state.billHolder.name ? "" + state.billHolder.name : ""}
+              />
+              <TextInputValue
+                onChangeText={handleChangeBill}
+                value={state.billHolder.bill ? "" + state.billHolder.bill : "0"}
+              />
+            </View>
+          ),
+          [state.visibleEditPopup]
         )}
       />
     </Wrapper>

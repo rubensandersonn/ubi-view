@@ -19,9 +19,11 @@ export default function Conta(props) {
         }}
       />
       <Texto decoration={state.checked ? "line-through" : "none"}>
-        R$ {bill} -{" "}
+        R$ {bill ? bill : 0} -{" "}
       </Texto>
-      <Texto decoration={state.checked ? "line-through" : "none"}>{text}</Texto>
+      <Texto decoration={state.checked ? "line-through" : "none"}>
+        {text ? text : ""}
+      </Texto>
       <EditButton onPress={handleEditButton}>
         <TextWhite>Edit</TextWhite>
       </EditButton>

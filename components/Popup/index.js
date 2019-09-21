@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { PureComponent } from "react";
 
 import { Text, View } from "react-native";
 
@@ -11,9 +11,9 @@ import Dialog, {
 } from "react-native-popup-dialog";
 import { Wrapper, CenterView } from "./styles";
 
-export default class Popup extends Component {
+class Popup extends PureComponent {
   render() {
-    const { styles, visible, Content, onCancel, onConfirm } = this.props;
+    const { visible, Content, onCancel, onConfirm } = this.props;
 
     return (
       <Wrapper>
@@ -43,3 +43,5 @@ export default class Popup extends Component {
     );
   }
 }
+
+export default React.memo(Popup);
