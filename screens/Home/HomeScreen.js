@@ -10,7 +10,9 @@ import {
   AddButton,
   EditMoneyButton,
   TextAddButton,
-  TextWhite
+  TextWhite,
+  TextInputName,
+  TextInputValue
 } from "./styles";
 
 import { Total } from "../../components/BillsHandler/Conta/style";
@@ -21,6 +23,7 @@ import {
   getLocalStorageData,
   setLocalStorageData
 } from "../../components/LocalStorage";
+import Popup from "../../components/Popup";
 
 export default HomeScreen = () => {
   // === STATES ===
@@ -30,6 +33,8 @@ export default HomeScreen = () => {
     showFormBill: false,
     showFormMonthMoney: false,
     moneyHolder: 0,
+    visibleEditPopup: false,
+    indexDaVez: -1,
     billHolder: {
       key: -1,
       name: null,
@@ -70,6 +75,27 @@ export default HomeScreen = () => {
    * handle text changes to the new bill
    * @param {*} text
    */
+  const handleEditName = text => {
+    let holder = state.billHolder;
+    holder.bill = text.nativeEvent.text;
+    setState(state => ({ ...state, billHolder: holder }));
+  };
+
+  /**
+   * handle text changes to the new bill
+   * @param {*} text
+   */
+  const handleEditBill = text => {
+    let holder = state.billHolder;
+    holder.bill = text.nativeEvent.text;
+
+    setState(state => ({ ...state, billHolder: holder }));
+  };
+
+  /**
+   * handle text changes to the new bill
+   * @param {*} text
+   */
   const handleChangeName = text => {
     let holder = state.billHolder;
     holder.name = text;
@@ -83,6 +109,7 @@ export default HomeScreen = () => {
   const handleChangeBill = text => {
     let holder = state.billHolder;
     holder.bill = parseFloat(text);
+
     setState(state => ({ ...state, billHolder: holder }));
   };
 
@@ -106,6 +133,15 @@ export default HomeScreen = () => {
    */
   const updateMoney = () => {
     setMoney(state.moneyHolder);
+    updateMoneyOnLocalStorage();
+  };
+
+  const updateConta = () => {
+    let holder = bills;
+    holder[state.indexDaVez].name = state.billHolder.name;
+    holder[state.indexDaVez].bill = state.billHolder.bill;
+    setBills(holder);
+
     updateMoneyOnLocalStorage();
   };
 
@@ -189,6 +225,29 @@ export default HomeScreen = () => {
         </EditMoneyButton>
       </View>
 
+      {/* add new bill */}
+
+      <AddForm
+        show={state.showFormBill}
+        inputList={[
+          {
+            placeholder: "Nome da Conta",
+            handleChange: handleChangeName
+          },
+          {
+            placeholder: "Valor da Conta",
+            handleChange: handleChangeBill
+          }
+        ]}
+        onCancel={() => {
+          toggleShowForm();
+        }}
+        onConfirm={() => {
+          addNewBill();
+          toggleShowForm();
+        }}
+      />
+
       {/* edit money */}
       <AddForm
         show={state.showFormMonthMoney}
@@ -213,26 +272,15 @@ export default HomeScreen = () => {
           handleCheck={index => {
             bills[index].toSum = !bills[index].toSum;
           }}
-        />
+          handleEditButton={index => {
+            const holder = bills[index];
 
-        <AddForm
-          show={state.showFormBill}
-          inputList={[
-            {
-              placeholder: "Nome da Conta",
-              handleChange: handleChangeName
-            },
-            {
-              placeholder: "Valor da Conta",
-              handleChange: handleChangeBill
-            }
-          ]}
-          onCancel={() => {
-            toggleShowForm();
-          }}
-          onConfirm={() => {
-            addNewBill();
-            toggleShowForm();
+            setState(state => ({
+              ...state,
+              visibleEditPopup: true,
+              billHolder: holder,
+              indexDaVez: index
+            }));
           }}
         />
       </WrapperList>
@@ -248,6 +296,30 @@ export default HomeScreen = () => {
           </TextAddButton>
         </AddButton>
       )}
+
+      {/* edit popup */}
+      <Popup
+        visible={state.visibleEditPopup}
+        onCancel={() => {
+          setState(state => ({ ...state, visibleEditPopup: false }));
+        }}
+        onConfirm={() => {
+          setState(state => ({ ...state, visibleEditPopup: false }));
+          updateConta();
+        }}
+        Content={() => (
+          <View>
+            <TextInputName
+              onChange={handleEditName}
+              value={"" + state.billHolder.name}
+            />
+            <TextInputValue
+              onChange={handleEditBill}
+              value={"" + state.billHolder.bill}
+            />
+          </View>
+        )}
+      />
     </Wrapper>
   );
 };

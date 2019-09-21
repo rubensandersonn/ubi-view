@@ -3,7 +3,7 @@ import { ScrollView, View } from "react-native";
 import Conta from "./Conta";
 
 export default function BillsHandler(props) {
-  const { bills, handleCheck } = props;
+  const { bills, handleCheck, handleEditButton } = props;
   const mapBills = bills ? (
     bills.map((el, index) => {
       return (
@@ -11,6 +11,9 @@ export default function BillsHandler(props) {
           <Conta
             text={el.name}
             bill={el.bill}
+            handleEditButton={() => {
+              handleEditButton(index);
+            }}
             whenChecked={() => {
               handleCheck(index);
             }}

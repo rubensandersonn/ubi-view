@@ -5,16 +5,17 @@ import {
   gray,
   lightGreen,
   danger,
-  green
+  green,
+  darkGray
 } from "../../utils/colors";
 
 // === TEXT ===
 
 export const TextWhite = styled.Text`
-  font-weight: bold;
-  font-size: 16px;
-  text-align: center;
+  font-size: 14px;
+  margin-left: 2%;
   color: #fefefe;
+  padding: 2%;
 `;
 
 export const TitlePage = styled.Text`
@@ -42,13 +43,12 @@ export const Row = styled.View`
 
 // Create a Wrapper component that'll render a <section> tag with some styles
 export const Wrapper = styled.KeyboardAvoidingView`
-  padding: 10px;
+  padding: 4px;
   flex: 1;
   /* background: papayawhip; */
 `;
 
 export const WrapperList = styled.View`
-  padding: 10px;
   margin: 10px;
   border-bottom-width: 1px;
   border-top-width: 1px;
@@ -56,11 +56,14 @@ export const WrapperList = styled.View`
   border-top-color: ${lightGray};
   border-bottom-color: ${lightGray};
   height: 65%;
+  width: 100%;
   /* background: papayawhip; */
 `;
 
 export const WrapperForm = styled.View`
   padding: 10px;
+  margin: 10px;
+  margin-right: 20px;
   border-width: 1px;
   border-color: ${lightGray};
   border-radius: 5px;
@@ -106,15 +109,17 @@ export const CancelNewBillButton = styled.TouchableOpacity`
 `;
 
 export const EditMoneyButton = styled.TouchableOpacity`
-  width: 60px;
+  width: 70px;
   height: 30px;
   border-radius: 10px;
-  background-color: ${gray};
+  background-color: ${darkGray};
   position: absolute;
-  top: 15px;
-  right: 15px;
-  margin: 10px;
-  padding: 15px;
+  right: 10px;
+  top: 8px;
+
+  margin-left: 10px;
+  margin-right: 10px;
+  padding: 10px;
   justify-content: center;
   align-items: center;
 `;
@@ -135,6 +140,7 @@ export const TextInputName = styled.TextInput`
   margin-bottom: 15px;
   padding: 10px;
   border-radius: 10px;
+  min-width: 80%;
 `;
 export const TextInputValue = styled.TextInput`
   border-width: 1px;
@@ -143,4 +149,5 @@ export const TextInputValue = styled.TextInput`
   margin-bottom: 15px;
   padding: 10px;
   border-radius: 10px;
+  min-width: 80%;
 `;

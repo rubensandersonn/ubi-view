@@ -1,5 +1,5 @@
 import styled from "styled-components/native";
-import { darkGray } from "../../../utils/colors";
+import { darkGray, primaryEnd, gray } from "../../../utils/colors";
 
 export const Texto = styled.Text.attrs(props => ({
   decoration: props.decoration
@@ -17,9 +17,33 @@ export const Total = styled.Text`
   padding: 2%;
 `;
 
+export const TextWhite = styled.Text`
+  font-size: 14px;
+  margin-left: 2%;
+  color: #fefefe;
+  padding: 2%;
+`;
+
 // Create a Wrapper component that'll render a <section> tag with some styles
 export const Wrapper = styled.View`
-  padding: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
   flex-direction: row;
   /* background: papayawhip; */
+`;
+
+export const EditButton = styled.TouchableOpacity`
+  width: 70px;
+  height: 30px;
+  border-radius: 10px;
+  background-color: ${gray};
+  position: absolute;
+  right: 10px;
+  top: 8px;
+
+  margin-left: 10px;
+  margin-right: 10px;
+  padding: 10px;
+  justify-content: center;
+  align-items: center;
 `;
