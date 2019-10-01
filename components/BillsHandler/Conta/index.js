@@ -3,9 +3,8 @@ import { CheckBox } from "react-native";
 import { Wrapper, Texto, EditButton, TextWhite } from "./style";
 
 export default function Conta(props) {
-  const [state, setState] = useState({ checked: false });
-
-  const { text, bill, whenChecked, handleEditButton } = props;
+  const { title, bill, whenChecked, handleEditButton, paid } = props;
+  const [state, setState] = useState({ checked: paid === true });
 
   return (
     <Wrapper>
@@ -22,7 +21,7 @@ export default function Conta(props) {
         R$ {bill ? bill : 0} -{" "}
       </Texto>
       <Texto decoration={state.checked ? "line-through" : "none"}>
-        {text ? text : ""}
+        {title ? title : ""}
       </Texto>
       <EditButton onPress={handleEditButton}>
         <TextWhite>Edit</TextWhite>
