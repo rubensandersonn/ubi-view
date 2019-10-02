@@ -13,7 +13,7 @@ import {
 
 import React, { Component } from "react";
 
-import { View, AsyncStorage, useCallback } from "react-native";
+import { View, AsyncStorage } from "react-native";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 
@@ -48,7 +48,12 @@ class Home extends Component {
   state = {
     money: 1500,
     showFormBill: false,
-    visiblePopup: false
+    visiblePopup: false,
+    billHolder: {
+      title: "",
+      bill: 0,
+      paid: false
+    }
   };
 
   async setBillsOnLocalStorage(newBills) {
@@ -132,7 +137,7 @@ class Home extends Component {
   };
 
   render() {
-    const { money } = this.state;
+    const { money, billHolder, visiblePopup } = this.state;
     const { bills, actionUpdateBill } = this.props;
     return (
       <Wrapper behavior="padding">
@@ -149,14 +154,11 @@ class Home extends Component {
                   handleEditButton={() => {
                     // handleEditButton(index);
                     console.log("edit", index);
-                    actionUpdateBill(
-                      { title: "cu", bill: 1000, paid: true, id: 0 },
-                      el.id
-                    );
                   }}
                   whenChecked={() => {
                     // handleCheck(index);
                     console.log("check", index);
+                    actionUpdateBill({ ...el, paid: !el.paid }, el.id);
                   }}
                   checked={el.paid}
                 />
@@ -169,28 +171,52 @@ class Home extends Component {
 
         <Total>Restante: R$ {money - this.sumAll(bills)}</Total>
 
-        <AddButton onPress={() => {}}>
+        <AddButton
+          onPress={() => {
+            this.setState(state => ({ ...state, visiblePopup: true }));
+          }}
+        >
           <TextAddButton>+</TextAddButton>
         </AddButton>
 
-        {/* <Popup
-          visible={this.state.visiblePopup}
+        <Popup
+          visible={visiblePopup}
           onCancel={() => {
-            setState(state => ({ ...state, visibleEditPopup: false }));
+            this.setState(state => ({ ...state, visiblePopup: false }));
           }}
           onConfirm={() => {
-            setState(state => ({ ...state, visibleEditPopup: false }));
+            //validate bill
+            actionAddBill({
+              ...this.state.billHolder,
+              id:
+                bills && bills.length !== 0 ? bills[bills.length - 1].id + 1 : 0
+            });
+            //erase bill holder
+            this.setState(state => ({ ...state, visiblePopup: false }));
           }}
-          Content={useCallback(
-            () => (
-              <View>
-                <TextInputName onChangeText={text => {}} value={""} />
-                <TextInputValue onChangeText={text => {}} value={"0"} />
-              </View>
-            ),
-            [this.state.visiblePopup]
+          Content={() => (
+            <View>
+              <TextInputName
+                onChangeText={text => {
+                  this.setState(state => ({
+                    ...state,
+                    billHolder: { ...state.billHolder, title: text }
+                  }));
+                }}
+                value={billHolder.title}
+              />
+              <TextInputValue
+                onChangeText={text => {
+                  this.setState(state => ({
+                    ...state,
+                    billHolder: { ...state.billHolder, bill: text }
+                  }));
+                }}
+                value={"" + billHolder.bill}
+              />
+            </View>
           )}
-        /> */}
+        />
       </Wrapper>
     );
   }

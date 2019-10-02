@@ -29,11 +29,13 @@ export const actionDeleteBill = id => ({
   type: billsActionTypes.DELETE,
   id: id
 });
-export const actionAddBill = (bill, id) => ({
-  type: billsActionTypes.ADD,
-  bill: bill,
-  id: id
-});
+export const actionAddBill = bill => {
+  console.log("adding", bill);
+  return {
+    type: billsActionTypes.ADD,
+    bill: bill
+  };
+};
 
 // REDUCER
 
@@ -45,8 +47,12 @@ const billReducer = (state = INITIAL_BILLS_STATE, action) => {
       );
     case billsActionTypes.DELETE:
       return state.filter(bill => bill.id === action.id);
+
     case billsActionTypes.ADD:
-      return [...state, action.bill];
+      var holder = state;
+      holder.push(action.bill);
+      console.log("after:", holder);
+      return holder;
     default:
       return state;
   }
@@ -62,7 +68,8 @@ const allBillsReducer = (state = INITIAL_BILLS_STATE, action) => {
 };
 
 const Reducers = combineReducers({
-  billsState: billReducer
+  billsState: billReducer,
+  allBillsReducer: allBillsReducer
 });
 
 export const Store = createStore(Reducers);
