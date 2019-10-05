@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { CheckBox } from "react-native";
-import { Wrapper, Texto, EditButton, TextWhite } from "./style";
+import { Wrapper, Texto, EditButton } from "./style";
+import { TextWhite } from "../../../utils/styled";
 
 export default function Conta(props) {
   const { title, bill, whenChecked, handleEditButton, paid } = props;

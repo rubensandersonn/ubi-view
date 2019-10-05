@@ -6,12 +6,15 @@ import {
   AddButton,
   EditMoneyButton,
   TextAddButton,
-  TextWhite,
   TextInputName,
-  TextInputValue
+  TextInputValue,
+  SaveButton,
+  TitlePopup,
+  RText,
+  Total
 } from "./styles";
 
-import React, { Component } from "react";
+import React, { Component, useCallback } from "react";
 
 import { View, AsyncStorage } from "react-native";
 import { connect } from "react-redux";
@@ -24,21 +27,21 @@ import {
   actionUpdateAllBills
 } from "../../store/bills";
 
-import { Total } from "../../components/BillsHandler/Conta/style";
-
 import BillsHandler from "../../components/BillsHandler";
 import AddForm from "../../components/AddForm";
-import {
-  getLocalStorageData,
-  setLocalStorageData
-} from "../../components/LocalStorage";
+
 import Popup from "../../components/Popup";
 import Conta from "../../components/BillsHandler/Conta";
+import { TextWhite } from "../../utils/styled";
+import { darkGray } from "../../utils/colors";
+import {
+  getLocalStorageData,
+  setLocalStorageData,
+  LocalTypeKeys
+} from "./LocalStorageHandler";
+import { toast } from "../../utils/functions";
 
-const LS_KEYS = {
-  bills: "@bills",
-  money: "@money"
-};
+const { MONEY, BILLS } = LocalTypeKeys;
 
 class Home extends Component {
   constructor(props) {
@@ -46,9 +49,10 @@ class Home extends Component {
   }
 
   state = {
-    money: 1500,
+    money: 0,
     showFormBill: false,
     visiblePopup: false,
+    visiblePopupMoney: false,
     billHolder: {
       title: "",
       bill: 0,
@@ -56,43 +60,33 @@ class Home extends Component {
     }
   };
 
-  async setBillsOnLocalStorage(newBills) {
-    try {
-      await AsyncStorage.setItem(
-        LS_KEYS.bills,
-        JSON.stringify({ bills: newBills })
-      );
-    } catch (error) {
-      // Error saving data
-      console.log(error);
-    }
-  }
-
-  async getBillsOnLocalStorage() {
-    try {
-      const Bills = await AsyncStorage.getItem(LS_KEYS.bills);
-      if (Bills !== null) {
-        console.log(Bills);
-        actionUpdateAllBills(JSON.parse(Bills).bills);
-      }
-    } catch (error) {
-      console.log("erro ao pegar o LS", error);
-    }
-  }
+  saveData = () => {
+    // saving bills
+    setLocalStorageData(BILLS, this.props.bills)
+      .then(res => {
+        toast("Contas salvas!");
+      })
+      .catch(error => {
+        toast("Erro ao salvar as contas.");
+      });
+    // saving money
+    setLocalStorageData(MONEY, this.state.money)
+      .then(res => {
+        toast("Dinheiro salvo!");
+      })
+      .catch(error => {
+        toast("Erro ao salvar o dinheiro.");
+      });
+  };
 
   componentDidMount() {
     const { actionUpdateAllBills } = this.props;
 
-    this.getBillsOnLocalStorage();
-
-    // console.log("bills", this.props.bills);
-    getLocalStorageData("@bills")
+    getLocalStorageData(BILLS)
       .then(Bills => {
         if (Bills) {
-          console.log("@found");
-          actionUpdateAllBills(JSON.parse(Bills).bills);
+          actionUpdateAllBills(Bills);
         } else {
-          console.log("@not found");
           actionUpdateAllBills([]);
         }
       })
@@ -103,20 +97,20 @@ class Home extends Component {
 
     // === getting money value ===
 
-    getLocalStorageData("@money")
+    getLocalStorageData(MONEY)
       .then(Money => {
         if (Money) {
           this.setState(state => ({
-            ...this.state,
-            money: JSON.parse(Money).money
+            ...state,
+            money: Money
           }));
         } else {
-          this.setState(state => ({ ...this.state, money: 0 }));
+          this.setState(state => ({ ...state, money: 0 }));
         }
       })
       .catch(err => {
         console.log(err);
-        this.setState(state => ({ ...this.state, money: 0 }));
+        setMoney(0);
       });
   }
 
@@ -136,35 +130,99 @@ class Home extends Component {
     this.setState(state => ({ ...state, showFormBill: !state.showFormBill }));
   };
 
+  Content = () =>
+    useCallback(
+      <View behavior="padding">
+        <TitlePopup>Nome para a conta:</TitlePopup>
+        <TextInputName
+          onChangeText={text => {
+            this.setState(state => ({
+              ...state,
+              billHolder: { ...state.billHolder, title: text }
+            }));
+          }}
+          value={this.state.billHolder.title}
+        />
+        <TitlePopup>Valor da conta:</TitlePopup>
+        <TextInputValue
+          onChangeText={text => {
+            this.setState(state => ({
+              ...state,
+              billHolder: { ...state.billHolder, bill: text }
+            }));
+          }}
+          value={"" + this.state.billHolder.bill}
+        />
+      </View>,
+      [this.state.billHolder]
+    );
+
+  ContentEditMoney = () =>
+    useCallback(
+      <View>
+        <TitlePopup>Dinheiro do Mês:</TitlePopup>
+        <TextInputValue
+          onChangeText={text => {
+            this.setState(state => ({
+              ...state,
+              money: text && text !== "" ? parseFloat(text) : 0
+            }));
+          }}
+          value={"" + this.state.money}
+        />
+      </View>,
+      [this.state.money]
+    );
+
   render() {
-    const { money, billHolder, visiblePopup } = this.state;
-    const { bills, actionUpdateBill } = this.props;
+    const { money, billHolder, visiblePopup, visiblePopupMoney } = this.state;
+    const {
+      bills,
+      actionUpdateBill,
+      actionAddBill,
+      actionDeleteBill,
+      actionUpdateAllBills
+    } = this.props;
+
     return (
       <Wrapper behavior="padding">
-        <View>
+        <View style={{ flexDirection: "row" }}>
           <Title>Dinheiro do Mês: {money}</Title>
+
+          <EditMoneyButton
+            onPress={() =>
+              this.setState(state => ({ ...state, visiblePopupMoney: true }))
+            }
+          >
+            <TextWhite>Edit</TextWhite>
+          </EditMoneyButton>
+
+          <SaveButton onPress={this.saveData}>
+            <TextWhite>Save</TextWhite>
+          </SaveButton>
         </View>
         <WrapperList>
-          {bills.map((el, index) => {
-            return (
-              <View key={index}>
-                <Conta
-                  title={el.title}
-                  bill={el.bill}
-                  handleEditButton={() => {
-                    // handleEditButton(index);
-                    console.log("edit", index);
-                  }}
-                  whenChecked={() => {
-                    // handleCheck(index);
-                    console.log("check", index);
-                    actionUpdateBill({ ...el, paid: !el.paid }, el.id);
-                  }}
-                  checked={el.paid}
-                />
-              </View>
-            );
-          })}
+          {bills && bills !== [] ? (
+            bills.map((el, index) => {
+              return (
+                <View key={index}>
+                  <Conta
+                    title={el.title}
+                    bill={el.bill}
+                    handleEditButton={() => {
+                      console.log("edit", index);
+                    }}
+                    whenChecked={() => {
+                      actionUpdateBill({ ...el, paid: !el.paid }, el.id);
+                    }}
+                    paid={el.paid}
+                  />
+                </View>
+              );
+            })
+          ) : (
+            <RText>Nenhuma conta ainda...</RText>
+          )}
         </WrapperList>
 
         <Total>Dívida: R$ {this.sumAll(bills)}</Total>
@@ -186,36 +244,42 @@ class Home extends Component {
           }}
           onConfirm={() => {
             //validate bill
-            actionAddBill({
-              ...this.state.billHolder,
-              id:
-                bills && bills.length !== 0 ? bills[bills.length - 1].id + 1 : 0
-            });
+            if (
+              billHolder.title &&
+              billHolder.title !== "" &&
+              billHolder.bill &&
+              billHolder.bill !== "" &&
+              billHolder.bill > 0
+            ) {
+              actionAddBill({
+                title: billHolder.title,
+                paid: billHolder.paid,
+                bill: billHolder.bill,
+                id:
+                  bills && bills.length !== 0
+                    ? bills[bills.length - 1].id + 1
+                    : 0
+              });
+            } else {
+              toast("AM I JOKE TO YOU?");
+            }
             //erase bill holder
+
             this.setState(state => ({ ...state, visiblePopup: false }));
           }}
-          Content={() => (
-            <View>
-              <TextInputName
-                onChangeText={text => {
-                  this.setState(state => ({
-                    ...state,
-                    billHolder: { ...state.billHolder, title: text }
-                  }));
-                }}
-                value={billHolder.title}
-              />
-              <TextInputValue
-                onChangeText={text => {
-                  this.setState(state => ({
-                    ...state,
-                    billHolder: { ...state.billHolder, bill: text }
-                  }));
-                }}
-                value={"" + billHolder.bill}
-              />
-            </View>
-          )}
+          Content={this.Content}
+        />
+
+        {/* pop up edit money */}
+        <Popup
+          visible={visiblePopupMoney}
+          onCancel={() => {
+            this.setState(state => ({ ...state, visiblePopupMoney: false }));
+          }}
+          onConfirm={() => {
+            this.setState(state => ({ ...state, visiblePopupMoney: false }));
+          }}
+          Content={this.ContentEditMoney}
         />
       </Wrapper>
     );

@@ -10,13 +10,6 @@ export const Texto = styled.Text.attrs(props => ({
   text-decoration: ${props => props.decoration || "none"};
 `;
 
-export const Total = styled.Text`
-  font-weight: bold;
-  font-size: 18px;
-  margin-left: 2%;
-  padding: 2%;
-`;
-
 export const TextWhite = styled.Text`
   font-size: 14px;
   margin-left: 2%;
