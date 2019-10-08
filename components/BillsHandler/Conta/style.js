@@ -40,3 +40,7 @@ export const EditButton = styled.TouchableOpacity`
   justify-content: center;
   align-items: center;
 `;
+
+export const Line = styled.ScrollView`
+  max-width: 70%;
+`;

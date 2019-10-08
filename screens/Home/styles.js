@@ -71,7 +71,7 @@ export const WrapperPopup = styled.KeyboardAvoidingView`
   max-height: 230px;
 `;
 
-export const WrapperList = styled.View`
+export const WrapperList = styled.ScrollView`
   margin: 10px;
   border-bottom-width: 1px;
   border-top-width: 1px;

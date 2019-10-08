@@ -33,7 +33,7 @@ import AddForm from "../../components/AddForm";
 import Popup from "../../components/Popup";
 import Conta from "../../components/BillsHandler/Conta";
 import { TextWhite } from "../../utils/styled";
-import { darkGray } from "../../utils/colors";
+import { darkGray, primaryEnd, danger } from "../../utils/colors";
 import {
   getLocalStorageData,
   setLocalStorageData,
@@ -118,16 +118,33 @@ class Home extends Component {
     let sum = 0.0;
     if (bills) {
       bills.forEach(el => {
-        if (!el.paid) {
+        sum = sum + parseFloat(el.bill);
+      });
+    }
+    return parseFloat(sum).toFixed(2);
+  };
+
+  sumAllPaid = bills => {
+    let sum = 0.0;
+    if (bills) {
+      bills.forEach(el => {
+        if (el.paid) {
           sum = sum + parseFloat(el.bill);
         }
       });
     }
-    return sum;
+    return parseFloat(sum).toFixed(2);
   };
 
   toggleShowForm = () => {
     this.setState(state => ({ ...state, showFormBill: !state.showFormBill }));
+  };
+
+  clearBillHolder = () => {
+    this.setState(state => ({
+      ...state,
+      billHolder: { title: "", paid: false, bill: 0, id: -1 }
+    }));
   };
 
   Content = () =>
@@ -202,32 +219,44 @@ class Home extends Component {
           </SaveButton>
         </View>
         <WrapperList>
-          {bills && bills !== [] ? (
+          {bills &&
+            bills !== [] &&
             bills.map((el, index) => {
               return (
                 <View key={index}>
                   <Conta
                     title={el.title}
                     bill={el.bill}
-                    handleEditButton={() => {
-                      console.log("edit", index);
+                    handleButton={() => {
+                      actionDeleteBill(el.id);
                     }}
                     whenChecked={() => {
                       actionUpdateBill({ ...el, paid: !el.paid }, el.id);
                     }}
                     paid={el.paid}
+                    textButton={"x"}
+                    styleButton={{
+                      backgroundColor: danger,
+                      width: 40,
+                      height: 40,
+                      alignSelf: "center",
+                      position: "absolute",
+                      right: 15
+                    }}
                   />
                 </View>
               );
-            })
-          ) : (
-            <RText>Nenhuma conta ainda...</RText>
-          )}
+            })}
         </WrapperList>
 
         <Total>Dívida: R$ {this.sumAll(bills)}</Total>
-
-        <Total>Restante: R$ {money - this.sumAll(bills)}</Total>
+        <Total>
+          Falta: R${" "}
+          {parseFloat(this.sumAll(bills) - this.sumAllPaid(bills)).toFixed(2)}
+        </Total>
+        <Total>
+          Saldo: R$ {parseFloat(money - this.sumAll(bills)).toFixed(2)}
+        </Total>
 
         <AddButton
           onPress={() => {
@@ -244,22 +273,24 @@ class Home extends Component {
           }}
           onConfirm={() => {
             //validate bill
+            const billWithDot = ("" + billHolder.bill).replace(",", ".");
             if (
               billHolder.title &&
               billHolder.title !== "" &&
-              billHolder.bill &&
-              billHolder.bill !== "" &&
-              billHolder.bill > 0
+              billWithDot &&
+              billWithDot !== "" &&
+              billWithDot > 0
             ) {
               actionAddBill({
                 title: billHolder.title,
                 paid: billHolder.paid,
-                bill: billHolder.bill,
+                bill: billWithDot,
                 id:
                   bills && bills.length !== 0
                     ? bills[bills.length - 1].id + 1
                     : 0
               });
+              this.clearBillHolder();
             } else {
               toast("AM I JOKE TO YOU?");
             }

@@ -43,7 +43,7 @@ const billReducer = (state = INITIAL_BILLS_STATE, action) => {
         bill.id === action.payload.id ? action.payload.bill : bill
       );
     case billsActionTypes.DELETE:
-      return state.filter(bill => bill.id === action.payload.id);
+      return state.filter(bill => bill.id !== action.payload.id);
 
     case billsActionTypes.ADD:
       return [
