@@ -35,7 +35,7 @@ export default function Conta(props) {
         </Texto>
       </Line>
       <RoundButton style={styleButton} onPress={handleButton}>
-        <TextWhite>{textButton}</TextWhite>
+        <TextWhite style={{ fontWeight: "600" }}>{textButton}</TextWhite>
       </RoundButton>
     </Wrapper>
   );

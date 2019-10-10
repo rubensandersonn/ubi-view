@@ -78,7 +78,8 @@ export const WrapperList = styled.ScrollView`
   border-radius: 10px;
   border-top-color: ${lightGray};
   border-bottom-color: ${lightGray};
-  height: 65%;
+  min-height: 55%;
+  height: 55%;
   width: 100%;
   /* background: papayawhip; */
 `;
@@ -144,16 +145,16 @@ export const EditMoneyButton = styled.TouchableOpacity`
   align-items: center;
 `;
 export const SaveButton = styled.TouchableOpacity`
-  width: 70px;
+  width: 60px;
   height: 30px;
   border-radius: 10px;
   background-color: ${primaryEnd};
   position: absolute;
   right: 10px;
-  top: 8px;
 
   margin-left: 10px;
   margin-right: 10px;
+  margin-top: 13px;
   padding: 5px 0px 5px 0px;
   justify-content: center;
   align-items: center;

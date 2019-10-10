@@ -14,9 +14,11 @@ import {
   Total
 } from "./styles";
 
+import Icon from "react-native-vector-icons/FontAwesome";
+
 import React, { Component, useCallback } from "react";
 
-import { View, AsyncStorage } from "react-native";
+import { View, Image } from "react-native";
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 
@@ -32,8 +34,8 @@ import AddForm from "../../components/AddForm";
 
 import Popup from "../../components/Popup";
 import Conta from "../../components/BillsHandler/Conta";
-import { TextWhite } from "../../utils/styled";
-import { darkGray, primaryEnd, danger } from "../../utils/colors";
+import { TextWhite, RoundButton } from "../../utils/styled";
+import { darkGray, primaryEnd, danger, white, gray } from "../../utils/colors";
 import {
   getLocalStorageData,
   setLocalStorageData,
@@ -159,6 +161,7 @@ class Home extends Component {
             }));
           }}
           value={this.state.billHolder.title}
+          autoFocus
         />
         <TitlePopup>Valor da conta:</TitlePopup>
         <TextInputValue
@@ -186,6 +189,7 @@ class Home extends Component {
             }));
           }}
           value={"" + this.state.money}
+          autoFocus
         />
       </View>,
       [this.state.money]
@@ -206,16 +210,25 @@ class Home extends Component {
         <View style={{ flexDirection: "row" }}>
           <Title>Dinheiro do Mês: {money}</Title>
 
-          <EditMoneyButton
+          <RoundButton
+            style={{
+              width: 32,
+              height: 32,
+              padding: 5,
+              marginLeft: 0,
+              backgroundColor: gray
+            }}
             onPress={() =>
               this.setState(state => ({ ...state, visiblePopupMoney: true }))
             }
           >
-            <TextWhite>Edit</TextWhite>
-          </EditMoneyButton>
+            {/* <TextWhite>Edit</TextWhite> */}
+            <Icon name="pencil" size={14} color={white} />
+          </RoundButton>
 
           <SaveButton onPress={this.saveData}>
-            <TextWhite>Save</TextWhite>
+            {/* <TextWhite>Save</TextWhite> */}
+            <Icon name="save" size={18} color={white} />
           </SaveButton>
         </View>
         <WrapperList>
@@ -324,7 +337,13 @@ Home.navigationOptions = {
 function Titulo() {
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <TitlePage>App de Contas</TitlePage>
+      <View style={{ flexDirection: "row" }}>
+        <Image
+          source={require("../../assets/images/pig.png")}
+          style={{ marginTop: 10, marginHorizontal: 10, resizeMode: "contain" }}
+        />
+        <TitlePage>PAY YOUR BILLS</TitlePage>
+      </View>
     </View>
   );
 }
