@@ -11,6 +11,7 @@ export default function LinksScreen() {
        */}
       <ExpoLinksView />
     </ScrollView>
+    
   );
 }
 
