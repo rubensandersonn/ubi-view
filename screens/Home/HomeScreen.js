@@ -1,7 +1,3 @@
-import * as WebBrowser from "expo-web-browser";
-import React, { useState, useEffect, useCallback } from "react";
-import { Platform, StyleSheet, View, Text } from "react-native";
-
 import {
   Wrapper,
   Title,
@@ -10,326 +6,328 @@ import {
   AddButton,
   EditMoneyButton,
   TextAddButton,
-  TextWhite,
   TextInputName,
-  TextInputValue
+  TextInputValue,
+  SaveButton,
+  TitlePopup,
+  RText,
+  Total
 } from "./styles";
 
-import { Total } from "../../components/BillsHandler/Conta/style";
+import Icon from "react-native-vector-icons/FontAwesome";
 
-import BillsHandler from "../../components/BillsHandler";
-import AddForm from "../../components/AddForm";
+import React, { Component, useCallback } from "react";
+
+import { View, Image } from "react-native";
+import { connect } from "react-redux";
+import { bindActionCreators } from "redux";
+
+import {
+  actionAddSensor,
+  actionDeleteSensor,
+  actionUpdateSensor,
+  actionUpdateAllSensors
+} from "../../store/sensor";
+
+import {
+  actionAddPerfil,
+  actionDeletePerfil,
+  actionUpdatePerfil,
+  actionUpdateAllPerfis
+} from "../../store/perfil";
+
+import Popup from "../../components/Popup";
+import {
+  darkGray,
+  primaryEnd,
+  danger,
+  white,
+  gray,
+  lightGray
+} from "../../utils/colors";
 import {
   getLocalStorageData,
-  setLocalStorageData
-} from "../../components/LocalStorage";
-import Popup from "../../components/Popup";
+  setLocalStorageData,
+  LocalTypeKeys
+} from "./LocalStorageHandler";
+import { toast } from "../../utils/functions";
+import Sensor from "../../components/Sensor";
+import SensorList from "../../components/Sensor/SensorList";
+import { Line } from "../../components/Sensor/style";
+import { TextWhite } from "../../utils/styled";
 
-export default HomeScreen = () => {
-  // === STATES ===
+const { MONEY, SENSORS } = LocalTypeKeys;
 
-  // setting general state
-  const [state, setState] = useState({
-    showFormBill: false,
-    showFormMonthMoney: false,
-    moneyHolder: 0,
-    visibleEditPopup: false,
-    indexDaVez: -1,
-    billHolder: {
-      key: -1,
-      name: null,
-      bill: null,
-      toSum: false
+class HomeScreen extends Component {
+  constructor(props) {
+    super(props);
+  }
+
+  state = {
+    money: 0,
+    showFormSensor: false,
+    visiblePopup: false,
+    visiblePopupMoney: false,
+    sensorHolder: {
+      title: "",
+      environment: ""
     }
-  });
+  };
 
-  // setting bills state
-  const [bills, setBills] = useState([
-    {
-      key: 0,
-      name: "Passagens",
-      bill: 70,
-      toSum: true
-    },
-    {
-      key: 1,
-      name: "Cartão Americanas",
-      bill: 25,
-      toSum: true
+  saveData = () => {
+    // saving sensors
+    setLocalStorageData(SENSORS, this.props.sensors)
+      .then(res => {
+        toast("Contas salvas!");
+      })
+      .catch(error => {
+        toast("Erro ao salvar as contas.");
+      });
+    // saving money
+    setLocalStorageData(MONEY, this.state.money)
+      .then(res => {
+        toast("Dinheiro salvo!");
+      })
+      .catch(error => {
+        toast("Erro ao salvar o dinheiro.");
+      });
+  };
+
+  componentDidMount() {
+    const { actionUpdateAllSensors } = this.props;
+
+    // getLocalStorageData(SENSORS)
+    //   .then(Sensors => {
+    //     if (Sensors) {
+    //       actionUpdateAllSensors(Sensors);
+    //     } else {
+    //       actionUpdateAllSensors([]);
+    //     }
+    //   })
+    //   .catch(err => {
+    //     console.log(err);
+    //     actionUpdateAllSensors([]);
+    //   });
+
+    // // === getting money value ===
+
+    // getLocalStorageData(MONEY)
+    //   .then(Money => {
+    //     if (Money) {
+    //       this.setState(state => ({
+    //         ...state,
+    //         money: Money
+    //       }));
+    //     } else {
+    //       this.setState(state => ({ ...state, money: 0 }));
+    //     }
+    //   })
+    //   .catch(err => {
+    //     console.log(err);
+    //     setMoney(0);
+    //   });
+  }
+
+  sumAll = sensors => {
+    let sum = 0.0;
+    if (sensors) {
+      sensors.forEach(el => {
+        sum = sum + parseFloat(el.sensor);
+      });
     }
-  ]);
-
-  const [money, setMoney] = useState(0);
-
-  // === CALLBACKS ===
-
-  /**
-   * handle text changes to the new bill
-   * @param {*} text
-   */
-  const handleChangeMonthMoney = text => {
-    setState(state => ({ ...state, moneyHolder: text }));
+    return parseFloat(sum).toFixed(2);
   };
 
-  /**
-   * handle text changes to the new bill
-   * @param {*} text
-   */
-  const handleEditName = text => {
-    let holder = state.billHolder;
-    holder.bill = text.nativeEvent.text;
-    setState(state => ({ ...state, billHolder: holder }));
-  };
-
-  /**
-   * handle text changes to the new bill
-   * @param {*} text
-   */
-  const handleEditBill = text => {
-    let holder = state.billHolder;
-    holder.bill = text.nativeEvent.text;
-
-    setState(state => ({ ...state, billHolder: holder }));
-  };
-
-  /**
-   * handle text changes to the new bill
-   * @param {*} text
-   */
-  const handleChangeName = text => {
-    let holder = state.billHolder;
-    holder.name = text;
-    setState(state => ({ ...state, billHolder: holder }));
-  };
-
-  /**
-   * handle text changes to the new bill
-   * @param {*} text
-   */
-  const handleChangeBill = text => {
-    let holder = state.billHolder;
-    holder.bill = parseFloat(text);
-
-    setState(state => ({ ...state, billHolder: holder }));
-  };
-
-  const updateConta = () => {
-    let holder = bills;
-    holder[state.indexDaVez].name = state.billHolder.name;
-    holder[state.indexDaVez].bill = state.billHolder.bill;
-    setBills(holder);
-
-    updateBillsOnLocalStorage();
-  };
-
-  /**
-   * gets the bill holded on state and put it on bill list
-   */
-  const addNewBill = () => {
-    let newBill = {
-      key: bills ? bills.length : 0,
-      name: state.billHolder.name,
-      bill: state.billHolder.bill,
-      toSum: true
-    };
-
-    bills ? bills.push(newBill) : setBills([newBill]);
-    updateBillsOnLocalStorage();
-  };
-
-  /**
-   * gets the bill holded on state and put it on bill list
-   */
-  const updateMoney = () => {
-    setMoney(state.moneyHolder);
-    updateMoneyOnLocalStorage();
-  };
-
-  /**
-   * Sums all bills
-   * @param {*} bills
-   */
-  const sumAll = bills => {
-    let sum = 0;
-    if (bills) {
-      bills.forEach(el => {
-        if (el.toSum) {
-          sum = sum + el.bill;
+  sumAllPaid = sensors => {
+    let sum = 0.0;
+    if (sensors) {
+      sensors.forEach(el => {
+        if (el.paid) {
+          sum = sum + parseFloat(el.sensor);
         }
       });
     }
-    return sum;
+    return parseFloat(sum).toFixed(2);
   };
 
-  const toggleShowForm = () => {
-    setState(state => ({ ...state, showFormBill: !state.showFormBill }));
-  };
-
-  const toggleShowFormMoney = () => {
-    setState(state => ({
+  toggleShowForm = () => {
+    this.setState(state => ({
       ...state,
-      showFormMonthMoney: !state.showFormMonthMoney
+      showFormSensor: !state.showFormSensor
     }));
   };
 
-  const updateMoneyOnLocalStorage = () => {
-    setLocalStorageData("@money", JSON.stringify({ money: money }))
-      .then(res => {
-        console.log("salvou money?", res);
-      })
-      .catch(err => console.log(err));
+  clearSensorHolder = () => {
+    this.setState(state => ({
+      ...state,
+      sensorHolder: { title: "", paid: false, sensor: 0, id: -1 }
+    }));
   };
 
-  const updateBillsOnLocalStorage = () => {
-    setLocalStorageData("@bills", JSON.stringify({ bills: bills }))
-      .then(res => {
-        console.log("salvou bill?", res);
-      })
-      .catch(err => console.log(err));
-  };
-
-  // === retrieving data from local storage ===
-  useEffect(() => {
-    // === getting bills ===
-    getLocalStorageData("@bills")
-      .then(Bills => {
-        if (Bills) {
-          setBills(JSON.parse(Bills).bills);
-        } else {
-          setBills(null);
-        }
-      })
-      .catch(err => {
-        console.log(err);
-        setBills(null);
-      });
-
-    // === getting money value ===
-
-    getLocalStorageData("@money")
-      .then(Money => {
-        if (Money) {
-          setMoney(JSON.parse(Money).money);
-        } else {
-          setMoney(0);
-        }
-      })
-      .catch(err => {
-        console.log(err);
-        setMoney(0);
-      });
-  }, []);
-
-  return (
-    <Wrapper behavior="padding">
-      <View>
-        <Title>Dinheiro do Mês: {money}</Title>
-        <EditMoneyButton onPress={toggleShowFormMoney}>
-          <TextWhite>Edit</TextWhite>
-        </EditMoneyButton>
-      </View>
-
-      {/* add new bill */}
-
-      <AddForm
-        show={state.showFormBill}
-        inputList={[
-          {
-            placeholder: "Nome da Conta",
-            handleChange: handleChangeName
-          },
-          {
-            placeholder: "Valor da Conta",
-            handleChange: handleChangeBill
-          }
-        ]}
-        onCancel={() => {
-          toggleShowForm();
-        }}
-        onConfirm={() => {
-          addNewBill();
-          toggleShowForm();
-        }}
-      />
-
-      {/* edit money */}
-      <AddForm
-        show={state.showFormMonthMoney}
-        inputList={[
-          {
-            placeholder: "Dinheiro do Mês",
-            handleChange: handleChangeMonthMoney
-          }
-        ]}
-        onCancel={() => {
-          toggleShowFormMoney();
-        }}
-        onConfirm={() => {
-          updateMoney();
-          toggleShowFormMoney();
-        }}
-      />
-
-      <WrapperList>
-        <BillsHandler
-          bills={bills}
-          handleCheck={index => {
-            bills[index].toSum = !bills[index].toSum;
-          }}
-          handleEditButton={index => {
-            const holder = bills[index];
-
-            setState(state => ({
+  Content = () =>
+    useCallback(
+      <View behavior="padding">
+        <TitlePopup>Sensor:</TitlePopup>
+        <TextInputName
+          onChangeText={text => {
+            this.setState(state => ({
               ...state,
-              visibleEditPopup: true,
-              billHolder: holder,
-              indexDaVez: index
+              sensorHolder: { ...state.sensorHolder, title: text }
             }));
           }}
+          value={this.state.sensorHolder.title}
+          autoFocus
         />
-      </WrapperList>
+        <TitlePopup>Environment:</TitlePopup>
+        <TextInputValue
+          onChangeText={text => {
+            this.setState(state => ({
+              ...state,
+              sensorHolder: { ...state.sensorHolder, environment: text }
+            }));
+          }}
+          value={"" + this.state.sensorHolder.environment}
+        />
+      </View>,
+      [this.state.sensorHolder]
+    );
 
-      <Total>Dívida: R$ {sumAll(bills)}</Total>
+  ContentEditMoney = () =>
+    useCallback(
+      <View>
+        <TitlePopup>Dinheiro do Mês:</TitlePopup>
+        <TextInputValue
+          onChangeText={text => {
+            this.setState(state => ({
+              ...state,
+              money: text && text !== "" ? parseFloat(text) : 0
+            }));
+          }}
+          value={"" + this.state.money}
+          autoFocus
+        />
+      </View>,
+      [this.state.money]
+    );
 
-      <Total>Restante: R$ {money - sumAll(bills)}</Total>
+  render() {
+    const { money, sensorHolder, visiblePopup, visiblePopupMoney } = this.state;
+    const {
+      sensors,
+      actionUpdateSensor,
+      actionAddSensor,
+      actionDeleteSensor,
+      actionUpdateAllSensors
+    } = this.props;
 
-      {!state.showFormBill && (
-        <AddButton onPress={toggleShowForm}>
-          <TextAddButton>
-            <Text>+</Text>
-          </TextAddButton>
-        </AddButton>
-      )}
+    const {
+      perfis,
+      actionUpdatePerfil,
+      actionAddPerfil,
+      actionDeletePerfil,
+      actionUpdateAllPerfis
+    } = this.props;
 
-      {/* edit popup */}
-      <Popup
-        visible={state.visibleEditPopup}
-        onCancel={() => {
-          setState(state => ({ ...state, visibleEditPopup: false }));
-        }}
-        onConfirm={() => {
-          setState(state => ({ ...state, visibleEditPopup: false }));
-          updateConta();
-        }}
-        Content={useCallback(
-          () => (
-            <View>
-              <TextInputName
-                onChangeText={handleChangeName}
-                value={state.billHolder.name ? "" + state.billHolder.name : ""}
-              />
-              <TextInputValue
-                onChangeText={handleChangeBill}
-                value={state.billHolder.bill ? "" + state.billHolder.bill : "0"}
-              />
-            </View>
-          ),
-          [state.visibleEditPopup]
-        )}
-      />
-    </Wrapper>
-  );
-};
+    return (
+      <Wrapper behavior="padding">
+        <Title style={{ marginLeft: 0, marginBottom: 0 }}>DEVICES</Title>
+
+        <View
+          style={{
+            marginTop: 10,
+            backgroundColor: gray,
+            flexDirection: "row"
+          }}
+        >
+          <TextWhite
+            onPress={() => {
+              this.setState({ filter: null });
+            }}
+            style={{
+              fontSize: 17,
+              fontWeight: this.state.filter ? "normal" : "bold"
+            }}
+          >
+            General
+          </TextWhite>
+          <TextWhite style={{ fontSize: 17 }}>|</TextWhite>
+          <TextWhite
+            onPress={() => {
+              this.setState({ filter: "Room 1" });
+            }}
+            style={{
+              fontSize: 17,
+              fontWeight: this.state.filter ? "bold" : "normal"
+            }}
+          >
+            My Environment
+          </TextWhite>
+        </View>
+        <WrapperList>
+          <SensorList handleMenuButton={() => {}} filter={this.state.filter} />
+        </WrapperList>
+
+        <Title style={{ marginTop: 0, marginLeft: 0, marginBottom: 0 }}>
+          MY ENVIRONMENT
+        </Title>
+
+        <Total>Room 1</Total>
+
+        {/* <AddButton
+          onPress={() => {
+            this.setState(state => ({ ...state, visiblePopup: true }));
+          }}
+        >
+          <TextAddButton>+</TextAddButton>
+        </AddButton> */}
+
+        <Popup
+          visible={visiblePopup}
+          onCancel={() => {
+            this.setState(state => ({ ...state, visiblePopup: false }));
+          }}
+          onConfirm={() => {
+            //validate sensor
+            if (
+              sensorHolder.title &&
+              sensorHolder.title !== "" &&
+              sensorHolder.environment &&
+              sensorHolder.environment !== ""
+            ) {
+              actionAddSensor({
+                title: sensorHolder.title,
+                environment: sensorHolder.environment,
+                id:
+                  sensors && sensors.length !== 0
+                    ? sensors[sensors.length - 1].id + 1
+                    : 0
+              });
+              this.clearSensorHolder();
+            } else {
+              toast("AM I JOKE TO YOU?");
+            }
+            //erase sensor holder
+
+            this.setState(state => ({ ...state, visiblePopup: false }));
+          }}
+          Content={this.Content}
+        />
+
+        {/* pop up edit money */}
+        <Popup
+          visible={visiblePopupMoney}
+          onCancel={() => {
+            this.setState(state => ({ ...state, visiblePopupMoney: false }));
+          }}
+          onConfirm={() => {
+            this.setState(state => ({ ...state, visiblePopupMoney: false }));
+          }}
+          Content={this.ContentEditMoney}
+        />
+      </Wrapper>
+    );
+  }
+}
 
 HomeScreen.navigationOptions = {
   headerTitle: <Titulo />
@@ -338,108 +336,40 @@ HomeScreen.navigationOptions = {
 function Titulo() {
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <TitlePage>App de Contas</TitlePage>
+      <View style={{ flexDirection: "row" }}>
+        {/* <Image
+          source={require("../../assets/images/pig.png")}
+          style={{ marginTop: 10, marginHorizontal: 10, resizeMode: "contain" }}
+        /> */}
+        <Title style={{ textAlign: "center", fontSize: 18 }}>
+          Smart Building
+        </Title>
+      </View>
     </View>
   );
 }
 
-function handleLearnMorePress() {
-  WebBrowser.openBrowserAsync(
-    "https://docs.expo.io/versions/latest/workflow/development-mode/"
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(
+    {
+      actionUpdateSensor,
+      actionUpdateAllSensors,
+      actionAddSensor,
+      actionDeleteSensor,
+      actionUpdatePerfil,
+      actionUpdateAllPerfis,
+      actionAddPerfil,
+      actionDeletePerfil
+    },
+    dispatch
   );
-}
 
-function handleHelpPress() {
-  WebBrowser.openBrowserAsync(
-    "https://docs.expo.io/versions/latest/workflow/up-and-running/#cant-see-your-changes"
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff"
-  },
-  developmentModeText: {
-    marginBottom: 20,
-    color: "rgba(0,0,0,0.4)",
-    fontSize: 14,
-    lineHeight: 19,
-    textAlign: "center"
-  },
-  contentContainer: {
-    paddingTop: 30
-  },
-  welcomeContainer: {
-    alignItems: "center",
-    marginTop: 10,
-    marginBottom: 20
-  },
-  welcomeImage: {
-    width: 100,
-    height: 80,
-    resizeMode: "contain",
-    marginTop: 3,
-    marginLeft: -10
-  },
-  getStartedContainer: {
-    alignItems: "center",
-    marginHorizontal: 50
-  },
-  homeScreenFilename: {
-    marginVertical: 7
-  },
-  codeHighlightText: {
-    color: "rgba(96,100,109, 0.8)"
-  },
-  codeHighlightContainer: {
-    backgroundColor: "rgba(0,0,0,0.05)",
-    borderRadius: 3,
-    paddingHorizontal: 4
-  },
-  getStartedText: {
-    fontSize: 17,
-    color: "rgba(96,100,109, 1)",
-    lineHeight: 24,
-    textAlign: "center"
-  },
-  tabBarInfoContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    ...Platform.select({
-      ios: {
-        shadowColor: "black",
-        shadowOffset: { width: 0, height: -3 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3
-      },
-      android: {
-        elevation: 20
-      }
-    }),
-    alignItems: "center",
-    backgroundColor: "#fbfbfb",
-    paddingVertical: 20
-  },
-  tabBarInfoText: {
-    fontSize: 17,
-    color: "rgba(96,100,109, 1)",
-    textAlign: "center"
-  },
-  navigationFilename: {
-    marginTop: 5
-  },
-  helpContainer: {
-    marginTop: 15,
-    alignItems: "center"
-  },
-  helpLink: {
-    paddingVertical: 15
-  },
-  helpLinkText: {
-    fontSize: 14,
-    color: "#2e78b7"
-  }
+const mapStateToProps = state => ({
+  sensors: state.sensorState,
+  perfis: state.perfisState
 });
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(HomeScreen);

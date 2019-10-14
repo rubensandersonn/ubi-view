@@ -1,5 +1,5 @@
 export const primaryStart = "#f18a69";
-export const primaryEnd = "#d13e60";
+export const primaryEnd = "#565656";
 export const primaryGradientArray = [primaryStart, primaryEnd];
 export const white = "#fefefe";
 export const lightWhite = "#fcefe9";

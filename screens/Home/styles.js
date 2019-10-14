@@ -74,7 +74,7 @@ export const WrapperPopup = styled.KeyboardAvoidingView`
 export const WrapperList = styled.ScrollView`
   margin: 10px;
   border-bottom-width: 1px;
-  border-top-width: 1px;
+  border-top-width: 0px;
   border-radius: 10px;
   border-top-color: ${lightGray};
   border-bottom-color: ${lightGray};

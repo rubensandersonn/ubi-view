@@ -36,7 +36,7 @@ export const actionAddBill = bill => {
 
 // REDUCER
 
-const billReducer = (state = INITIAL_BILLS_STATE, action) => {
+export const billReducer = (state = INITIAL_BILLS_STATE, action) => {
   switch (action.type) {
     case billsActionTypes.UPDATE:
       return state.map(bill =>
